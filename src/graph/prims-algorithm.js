@@ -8,7 +8,7 @@ export default function PrimsAlgorithm(edges) {
     function extendsMST(point) {
         return (
             (connectedNodes.has(point.neighbors[0]) && !connectedNodes.has(point.neighbors[1])) ||
-            (connectedNodes.has(point.neighbors[1]) && !connectedNodes.has(point.neighbors[1]))
+            (connectedNodes.has(point.neighbors[1]) && !connectedNodes.has(point.neighbors[0]))
         )
     }
 
@@ -16,6 +16,7 @@ export default function PrimsAlgorithm(edges) {
 
     while (nextEdges.length > 0) {
         let picked = nextEdges.shift()
+        console.log([picked, ...nextEdges])
         considered.push([picked, ...nextEdges])
         mst.push(picked)
         connectedNodes.add(picked.neighbors[0])
