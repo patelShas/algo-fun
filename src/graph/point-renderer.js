@@ -6,7 +6,8 @@ const PointRenderer = (
         point = {
             pointId: 0,
             status: "EMPTY"
-        }
+        },
+        onClickBehavior = () => {}
     }
 ) => {
     const edgeRef = useRef(null);
@@ -20,14 +21,22 @@ const PointRenderer = (
     if (point.status === "NODE") {
         return (
             <div className={"bg-primary node-box"}>
-                Node {point.pointId}
+                <span className={"text-white"}>Node {point.pointId}</span>
+
             </div>
         )
     } else if (point.status === "EDGE") {
+        let orientationStyle = (point.horizontalStatus === true) ? (
+            {width: "100%", height: "50%"}
+        ) : (
+            {width: "50%", height: "100%"}
+        )
         return (
-            <div ref={edgeRef} className={"node-box"} id={`edge-no-${point.pointId}`} style={{backgroundColor : "grey"}}>
-                {point.neighbors[0]}{" to "}{point.neighbors[1]}
-                {" with weight of "}{point.weight}
+            <div className={"node-box"}>
+                <div id={`edge-no-${point.pointId}`} className={"mx-auto my-auto"} onClick={onClickBehavior}
+                     style={{backgroundColor: "grey", ...orientationStyle}} ref={edgeRef}>
+                    <span>{"Weight of "}{point.weight}</span>
+                </div>
             </div>
         )
     }

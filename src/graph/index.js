@@ -17,7 +17,7 @@ export default class Graph extends React.Component {
     }
 
     resetGraph() {
-        const GRID_SIZE = 5
+        const GRID_SIZE = 3
         let graph = Array(GRID_SIZE)
         let count = 0
         for (let i = 0; i < GRID_SIZE; i++) {
@@ -25,20 +25,22 @@ export default class Graph extends React.Component {
             for (let j = 0; j < GRID_SIZE; j++) {
                 let rowEven = i % 2 === 0
                 let colEven = j % 2 === 0
-                let neighbors = [-1, -1]
-                let weight = Math.floor(Math.random() * 5) + 1
+                let extraDetails = {}
                 let status = "EMPTY"
                 if (rowEven && colEven) {
                     status = "NODE"
                 } else if (rowEven || colEven) {
                     status = "EDGE"
-                    neighbors = rowEven ? [count - 1, count + 1] : [count - GRID_SIZE, count + GRID_SIZE]
+                    extraDetails = {
+                        neighbors : rowEven ? [count - 1, count + 1] : [count - GRID_SIZE, count + GRID_SIZE],
+                        weight : Math.floor(Math.random() * 5) + 1,
+                        horizontalStatus : rowEven
+                    }
                 }
                 graph[i][j] = {
                     pointId: count,
                     status: status,
-                    neighbors: neighbors,
-                    weight : weight
+                    ...extraDetails
                 }
                 count++
             }
@@ -46,7 +48,7 @@ export default class Graph extends React.Component {
         this.setState({graph : graph})
     }
 
-    executePrims() {
+    async executePrims() {
         let edges = []
         this.state.graph.forEach((row) => {
             row.filter((point) =>
@@ -55,14 +57,37 @@ export default class Graph extends React.Component {
                 edges.push(point)
             })
         })
-        let [mst, considered] = PrimsAlgorithm(edges)
-        mst.forEach((edge) => {
-            let edgeBox = document.getElementById(`edge-no-${edge.pointId}`)
-            edgeBox.style.backgroundColor = 'turquoise'
-        })
+        let considered = PrimsAlgorithm(edges)[1]
+        for (const consideredEdges of considered) {
+            let styles = consideredEdges.map((edge) => document.getElementById(`edge-no-${edge.pointId}`).style)
+            styles.forEach((style) => {
+                style.backgroundColor = 'yellow'
+            })
+            await this.timeout(500)
+            styles.forEach((style, idx) => {
+                if (idx === 0) {
+                    style.backgroundColor = 'turquoise'
+                } else {
+                    style.backgroundColor = 'grey'
+                }
+            })
+            await this.timeout(500)
+            console.log(consideredEdges)
+        }
+        await this.timeout(1000)
         console.log(considered)
     }
 
+    timeout(delay) {
+        return new Promise( res => setTimeout(res, delay));
+    }
+
+    incrementWeight(point) {
+        if (point.status === "EDGE") {
+            point.weight += 1
+            this.setState(this.state)
+        }
+    }
 
     render() {
         return (
@@ -71,7 +96,7 @@ export default class Graph extends React.Component {
                     return (
                         <div className={"d-flex flex-row justify-content-center"} key={idx}>
                             {this.state.graph[idx].map((point, jdx) => {
-                                return <PointRenderer point={point} key={jdx}/>
+                                return <PointRenderer point={point} key={jdx} onClickBehavior={() => this.incrementWeight(point)}/>
                             })}
                         </div>
                     )
