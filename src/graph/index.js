@@ -6,15 +6,22 @@ export default class Graph extends React.Component {
 
 
     constructor(props) {
-        const GRID_SIZE = 5
-
         super(props);
         this.state = {
-            graph: Array(GRID_SIZE)
+            graph: []
         }
+    }
+
+    componentDidMount() {
+        this.resetGraph()
+    }
+
+    resetGraph() {
+        const GRID_SIZE = 5
+        let graph = Array(GRID_SIZE)
         let count = 0
         for (let i = 0; i < GRID_SIZE; i++) {
-            this.state.graph[i] = Array(GRID_SIZE)
+            graph[i] = Array(GRID_SIZE)
             for (let j = 0; j < GRID_SIZE; j++) {
                 let rowEven = i % 2 === 0
                 let colEven = j % 2 === 0
@@ -27,7 +34,7 @@ export default class Graph extends React.Component {
                     status = "EDGE"
                     neighbors = rowEven ? [count - 1, count + 1] : [count - GRID_SIZE, count + GRID_SIZE]
                 }
-                this.state.graph[i][j] = {
+                graph[i][j] = {
                     pointId: count,
                     status: status,
                     neighbors: neighbors,
@@ -36,10 +43,10 @@ export default class Graph extends React.Component {
                 count++
             }
         }
+        this.setState({graph : graph})
     }
 
     executePrims() {
-        console.log("PRIM")
         let edges = []
         this.state.graph.forEach((row) => {
             row.filter((point) =>
@@ -48,7 +55,12 @@ export default class Graph extends React.Component {
                 edges.push(point)
             })
         })
-        PrimsAlgorithm(edges)
+        let [mst, considered] = PrimsAlgorithm(edges)
+        mst.forEach((edge) => {
+            let edgeBox = document.getElementById(`edge-no-${edge.pointId}`)
+            edgeBox.style.backgroundColor = 'turquoise'
+        })
+        console.log(considered)
     }
 
 
@@ -66,6 +78,7 @@ export default class Graph extends React.Component {
                 })}
                 <br/>
                 <button type="button" className="btn btn-primary" onClick={() => this.executePrims()}>Prim's</button>
+                <button type="button" className="btn btn-danger" onClick={() => this.resetGraph()}>Reset</button>
             </div>
         )
 
